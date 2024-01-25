@@ -1,0 +1,474 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>692</width>
+    <height>395</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>TEXT ENCRYPTION/DECRYPTION CONVERTER</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QTabWidget" name="tabWidget">
+    <property name="geometry">
+     <rect>
+      <x>3</x>
+      <y>3</y>
+      <width>687</width>
+      <height>388</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>맑은 고딕</family>
+      <pointsize>10</pointsize>
+     </font>
+    </property>
+    <property name="currentIndex">
+     <number>0</number>
+    </property>
+    <widget class="QWidget" name="aesTab">
+     <attribute name="title">
+      <string>AES</string>
+     </attribute>
+     <widget class="QGroupBox" name="aesSettingsGroupBox">
+      <property name="geometry">
+       <rect>
+        <x>5</x>
+        <y>4</y>
+        <width>671</width>
+        <height>88</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>Settings</string>
+      </property>
+      <widget class="QWidget" name="gridLayoutWidget">
+       <property name="geometry">
+        <rect>
+         <x>8</x>
+         <y>14</y>
+         <width>263</width>
+         <height>70</height>
+        </rect>
+       </property>
+       <layout class="QGridLayout" name="aesRadioGridLayout">
+        <item row="0" column="2">
+         <widget class="QRadioButton" name="aesDescryptRadioBtn">
+          <property name="text">
+           <string>Decryption</string>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">aesMethodButtonGroup</string>
+          </attribute>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QRadioButton" name="aesEncryptRadioBtn">
+          <property name="text">
+           <string>Encryption</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">aesMethodButtonGroup</string>
+          </attribute>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QLabel" name="aesMethodLabel">
+          <property name="text">
+           <string>Method</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="aesFormatLabel">
+          <property name="text">
+           <string>Format</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QRadioButton" name="aesHexRadioBtn">
+          <property name="text">
+           <string>Hex</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">aesFormatButtonGroup</string>
+          </attribute>
+         </widget>
+        </item>
+        <item row="1" column="2">
+         <widget class="QRadioButton" name="aesB64RadioBtn">
+          <property name="text">
+           <string>Base64</string>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">aesFormatButtonGroup</string>
+          </attribute>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="gridLayoutWidget_2">
+       <property name="geometry">
+        <rect>
+         <x>280</x>
+         <y>14</y>
+         <width>383</width>
+         <height>70</height>
+        </rect>
+       </property>
+       <layout class="QGridLayout" name="aesTextGridLayout">
+        <property name="leftMargin">
+         <number>5</number>
+        </property>
+        <property name="rightMargin">
+         <number>5</number>
+        </property>
+        <item row="0" column="0">
+         <widget class="QLabel" name="aesPasswordLabel">
+          <property name="text">
+           <string>Password</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QLineEdit" name="lineEdit"/>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="aesSaltLabel">
+          <property name="text">
+           <string>Salt</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QLineEdit" name="lineEdit_2"/>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+     <widget class="QWidget" name="verticalLayoutWidget">
+      <property name="geometry">
+       <rect>
+        <x>5</x>
+        <y>99</y>
+        <width>671</width>
+        <height>253</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="aesInOutVerticalLayout">
+       <item>
+        <widget class="QLabel" name="aesInputLabel">
+         <property name="text">
+          <string>Input Text</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QTextEdit" name="aesInputTextEdit"/>
+       </item>
+       <item>
+        <widget class="QLabel" name="aesOutputLabel">
+         <property name="text">
+          <string>Output Text</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QTextEdit" name="aesOutputTextEdit">
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="shaTab">
+     <attribute name="title">
+      <string>SHA</string>
+     </attribute>
+     <widget class="QGroupBox" name="shaSettingsGroupBox">
+      <property name="geometry">
+       <rect>
+        <x>5</x>
+        <y>4</y>
+        <width>671</width>
+        <height>88</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>Settings</string>
+      </property>
+      <widget class="QWidget" name="gridLayoutWidget_3">
+       <property name="geometry">
+        <rect>
+         <x>8</x>
+         <y>14</y>
+         <width>419</width>
+         <height>70</height>
+        </rect>
+       </property>
+       <layout class="QGridLayout" name="shaRadioGridLayout">
+        <item row="0" column="1">
+         <widget class="QRadioButton" name="sha256RadioBtn">
+          <property name="text">
+           <string>SHA-256</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">shaMethodButtonGroup</string>
+          </attribute>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="shaFormatLabel">
+          <property name="text">
+           <string>Format</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="2">
+         <widget class="QRadioButton" name="shaB64RadioBtn">
+          <property name="text">
+           <string>Base64</string>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">shaFormatButtonGroup</string>
+          </attribute>
+         </widget>
+        </item>
+        <item row="0" column="3">
+         <widget class="QRadioButton" name="sha3256RadioBtn">
+          <property name="text">
+           <string>SHA3-256</string>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">shaMethodButtonGroup</string>
+          </attribute>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QRadioButton" name="shaHexRadioBtn">
+          <property name="text">
+           <string>Hex</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">shaFormatButtonGroup</string>
+          </attribute>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QLabel" name="shaMethodLabel">
+          <property name="text">
+           <string>Method</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="2">
+         <widget class="QRadioButton" name="sha512tRadioBtn">
+          <property name="text">
+           <string>SHA-512</string>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">shaMethodButtonGroup</string>
+          </attribute>
+         </widget>
+        </item>
+        <item row="0" column="4">
+         <widget class="QRadioButton" name="sha3512RadioBtn">
+          <property name="text">
+           <string>SHA3-512</string>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">shaMethodButtonGroup</string>
+          </attribute>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+     <widget class="QWidget" name="verticalLayoutWidget_2">
+      <property name="geometry">
+       <rect>
+        <x>5</x>
+        <y>99</y>
+        <width>671</width>
+        <height>253</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="shaInOutVerticalLayout">
+       <item>
+        <widget class="QLabel" name="shaInputLabel">
+         <property name="text">
+          <string>Input Text</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QTextEdit" name="shaInputTextEdit"/>
+       </item>
+       <item>
+        <widget class="QLabel" name="shaOutputLabel">
+         <property name="text">
+          <string>Output Text</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QTextEdit" name="shaOutputTextEdit">
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="b64Tab">
+     <attribute name="title">
+      <string>BASE64</string>
+     </attribute>
+     <widget class="QGroupBox" name="b64SettingsGroupBox">
+      <property name="geometry">
+       <rect>
+        <x>5</x>
+        <y>4</y>
+        <width>671</width>
+        <height>88</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>Settings</string>
+      </property>
+      <widget class="QWidget" name="gridLayoutWidget_4">
+       <property name="geometry">
+        <rect>
+         <x>8</x>
+         <y>14</y>
+         <width>249</width>
+         <height>70</height>
+        </rect>
+       </property>
+       <layout class="QGridLayout" name="b64RadioGridLayout">
+        <item row="0" column="1">
+         <widget class="QRadioButton" name="b64EncodingRadioBtn">
+          <property name="text">
+           <string>Encoding</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">b64MethodButtonGroup</string>
+          </attribute>
+         </widget>
+        </item>
+        <item row="0" column="2">
+         <widget class="QRadioButton" name="b64DecodeRadioBtn">
+          <property name="text">
+           <string>Decoding</string>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">b64MethodButtonGroup</string>
+          </attribute>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QLabel" name="b64MethodLabel">
+          <property name="text">
+           <string>Method</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+     <widget class="QWidget" name="verticalLayoutWidget_3">
+      <property name="geometry">
+       <rect>
+        <x>5</x>
+        <y>99</y>
+        <width>671</width>
+        <height>253</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="b64InOutVerticalLayout">
+       <item>
+        <widget class="QLabel" name="b64InputLabel">
+         <property name="text">
+          <string>Input Text</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QTextEdit" name="b64InputTextEdit"/>
+       </item>
+       <item>
+        <widget class="QLabel" name="b64OutputLabel">
+         <property name="text">
+          <string>Output Text</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QTextEdit" name="b64OutputTextEdit">
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </widget>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+ <buttongroups>
+  <buttongroup name="aesMethodButtonGroup"/>
+  <buttongroup name="aesFormatButtonGroup"/>
+  <buttongroup name="shaMethodButtonGroup"/>
+  <buttongroup name="shaFormatButtonGroup"/>
+  <buttongroup name="b64MethodButtonGroup"/>
+ </buttongroups>
+</ui>
