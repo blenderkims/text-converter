@@ -8,7 +8,7 @@ Feature List
 * Base64 Encoding/Decoding
 
 ## AES Tab
-### AES-256 Encryption/Decryption Mosw
+### AES-256 Encryption/Decryption Mode
 ![AES](images/aes_screen.png)
 ### Settings
 - **Method**
