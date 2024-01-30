@@ -1,6 +1,6 @@
 <!DOCTYPE RCC>
 <RCC version="1.0">
 	<qresource prefix="icons">
-		<file alias="icon.png">encrypted.ico</file>
+		<file alias="icon.png">images/encrypted.ico</file>
 	</qresource>
 </RCC>

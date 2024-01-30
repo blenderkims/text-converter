@@ -1,7 +1,17 @@
+import os
+
 from PyQt5 import QtCore, QtGui, QtWidgets
-from converter import AESEncrypt, SHAHash, B64Encode
-from converter import AES_DEFAULT_PASSWORD, AES_DEFAULT_SALT, SHA_ALGORITHM, OUTPUT_FORMAT
+from converter import AESEncrypt, RSAEncrypt, SHAHash, B64Encode
+from converter import AES_DEFAULT_PASSWORD, AES_DEFAULT_SALT, RSA_BIT, RSA_DEFAULT_PASSPHRASE, SHA_ALGORITHM, OUTPUT_FORMAT
+from os import path
+from viewer import KeyViewerDialog
 import resources
+
+
+RSA_DEFAULT_PRIVATE_FILE = 'rsa_private.pem'
+RSA_DEFAULT_PRIVATE_PATH = path.realpath(RSA_DEFAULT_PRIVATE_FILE).replace('\\', '/')
+RSA_DEFAULT_PUBLIC_FILE = 'rsa_public.pem'
+RSA_DEFAULT_PUBLIC_PATH = path.realpath(RSA_DEFAULT_PUBLIC_FILE).replace('\\', '/')
 
 class MainWindow(QtWidgets.QMainWindow):
 
@@ -9,11 +19,19 @@ class MainWindow(QtWidgets.QMainWindow):
         super().__init__()
         self.init()
         self.settings()
+        if not path.exists(RSA_DEFAULT_PRIVATE_PATH) or not path.exists(RSA_DEFAULT_PUBLIC_PATH):
+            self.rsaKeyGenerate()
+        else:
+            self.rsaPrivateFileRead(RSA_DEFAULT_PRIVATE_PATH)
+            self.rsaPublicFileRead(RSA_DEFAULT_PUBLIC_PATH)
 
     def init(self):
         self.aes = AESEncrypt()
+        self.rsa = RSAEncrypt()
         self.sha = SHAHash()
         self.b64 = B64Encode()
+        self.keyViewer = KeyViewerDialog(self)
+        self.messageBox = QtWidgets.QMessageBox(self)
 
     def settings(self):
         # MainWindow Settings
@@ -66,7 +84,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.aesEncryptRadioBtn = QtWidgets.QRadioButton(self.aesRadioGridLayoutWidget)
         self.aesEncryptRadioBtn.setChecked(True)
         self.aesEncryptRadioBtn.setObjectName("aesEncryptRadioBtn")
-        self.aesEncryptRadioBtn.toggled.connect(self.aesMethodRadioChanged)
         self.aesRadioGridLayout.addWidget(self.aesEncryptRadioBtn, 0, 1, 1, 1)
 
         self.aesDescryptRadioBtn = QtWidgets.QRadioButton(self.aesRadioGridLayoutWidget)
@@ -77,6 +94,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.aesMethodButtonGroup.setObjectName("aesMethodButtonGroup")
         self.aesMethodButtonGroup.addButton(self.aesEncryptRadioBtn)
         self.aesMethodButtonGroup.addButton(self.aesDescryptRadioBtn)
+        self.aesMethodButtonGroup.buttonToggled.connect(self.aesMethodRadioChanged)
 
         # AES Settings Format Radio Buttons Group
         self.aesFormatLabel = QtWidgets.QLabel(self.aesRadioGridLayoutWidget)
@@ -87,7 +105,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.aesHexRadioBtn = QtWidgets.QRadioButton(self.aesRadioGridLayoutWidget)
         self.aesHexRadioBtn.setChecked(True)
         self.aesHexRadioBtn.setObjectName("aesHexRadioBtn")
-        self.aesHexRadioBtn.toggled.connect(self.aesFormatRadioChanged)
         self.aesRadioGridLayout.addWidget(self.aesHexRadioBtn, 1, 1, 1, 1)
 
         self.aesB64RadioBtn = QtWidgets.QRadioButton(self.aesRadioGridLayoutWidget)
@@ -98,6 +115,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.aesFormatButtonGroup.setObjectName("aesFormatButtonGroup")
         self.aesFormatButtonGroup.addButton(self.aesHexRadioBtn)
         self.aesFormatButtonGroup.addButton(self.aesB64RadioBtn)
+        self.aesFormatButtonGroup.buttonToggled.connect(self.aesFormatRadioChanged)
 
         # AES Settings Text Grid Layout
         self.aesTextGridLayoutWidget = QtWidgets.QWidget(self.aesSettingsGroupBox)
@@ -156,6 +174,142 @@ class MainWindow(QtWidgets.QMainWindow):
         self.aesOutputTextEdit.setReadOnly(True)
         self.aesOutputTextEdit.setObjectName("aesOutputTextEdit")
         self.aesInOutVerticalLayout.addWidget(self.aesOutputTextEdit)
+
+        # RSA Tab Widget
+        self.rsaTab = QtWidgets.QWidget()
+        self.rsaTab.setObjectName("rsaTab")
+        self.tabWidget.addTab(self.rsaTab, "")
+
+        # RSA Settings Group Box
+        self.rsaSettingsGroupBox = QtWidgets.QGroupBox(self.rsaTab)
+        self.rsaSettingsGroupBox.setGeometry(QtCore.QRect(5, 4, 671, 88))
+        self.rsaSettingsGroupBox.setObjectName("rsaSettingsGroupBox")
+
+        # RSA Settings Radio Grid Layout
+        self.rsaRadioGridLayoutWidget = QtWidgets.QWidget(self.rsaSettingsGroupBox)
+        self.rsaRadioGridLayoutWidget.setGeometry(QtCore.QRect(8, 14, 263, 70))
+        self.rsaRadioGridLayoutWidget.setObjectName("rsaRadioGridLayoutWidget")
+        self.rsaRadioGridLayout = QtWidgets.QGridLayout(self.rsaRadioGridLayoutWidget)
+        self.rsaRadioGridLayout.setContentsMargins(0, 0, 0, 0)
+        self.rsaRadioGridLayout.setObjectName("rsaRadioGridLayout")
+
+        # RSA Settings Method Radio Buttons Group
+        self.rsaMethodLabel = QtWidgets.QLabel(self.rsaRadioGridLayoutWidget)
+        self.rsaMethodLabel.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.rsaMethodLabel.setObjectName("rsaMethodLabel")
+        self.rsaRadioGridLayout.addWidget(self.rsaMethodLabel, 0, 0, 1, 1)
+
+        self.rsaEncryptRadioBtn = QtWidgets.QRadioButton(self.rsaRadioGridLayoutWidget)
+        self.rsaEncryptRadioBtn.setChecked(True)
+        self.rsaEncryptRadioBtn.setObjectName("rsaEncryptRadioBtn")
+        self.rsaRadioGridLayout.addWidget(self.rsaEncryptRadioBtn, 0, 1, 1, 1)
+
+        self.rsaDescryptRadioBtn = QtWidgets.QRadioButton(self.rsaRadioGridLayoutWidget)
+        self.rsaDescryptRadioBtn.setObjectName("rsaDescryptRadioBtn")
+        self.rsaRadioGridLayout.addWidget(self.rsaDescryptRadioBtn, 0, 2, 1, 1)
+
+        self.rsaMethodButtonGroup = QtWidgets.QButtonGroup(self)
+        self.rsaMethodButtonGroup.setObjectName("rsaMethodButtonGroup")
+        self.rsaMethodButtonGroup.addButton(self.rsaDescryptRadioBtn)
+        self.rsaMethodButtonGroup.addButton(self.rsaEncryptRadioBtn)
+        self.rsaMethodButtonGroup.buttonToggled.connect(self.rsaMethodRadioChanged)
+
+        # RSA Settings Format Radio Buttons Group
+        self.rsaFormatLabel = QtWidgets.QLabel(self.rsaRadioGridLayoutWidget)
+        self.rsaFormatLabel.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.rsaFormatLabel.setObjectName("rsaFormatLabel")
+        self.rsaRadioGridLayout.addWidget(self.rsaFormatLabel, 1, 0, 1, 1)
+
+        self.rsaHexRadioBtn = QtWidgets.QRadioButton(self.rsaRadioGridLayoutWidget)
+        self.rsaHexRadioBtn.setChecked(True)
+        self.rsaHexRadioBtn.setObjectName("rsaHexRadioBtn")
+        self.rsaRadioGridLayout.addWidget(self.rsaHexRadioBtn, 1, 1, 1, 1)
+
+        self.rsaB64RadioBtn = QtWidgets.QRadioButton(self.rsaRadioGridLayoutWidget)
+        self.rsaB64RadioBtn.setObjectName("rsaB64RadioBtn")
+        self.rsaRadioGridLayout.addWidget(self.rsaB64RadioBtn, 1, 2, 1, 1)
+
+        self.rsaFormatButtonGroup = QtWidgets.QButtonGroup(self)
+        self.rsaFormatButtonGroup.setObjectName("rsaFormatButtonGroup")
+        self.rsaFormatButtonGroup.addButton(self.rsaHexRadioBtn)
+        self.rsaFormatButtonGroup.addButton(self.rsaB64RadioBtn)
+        self.rsaFormatButtonGroup.buttonToggled.connect(self.rsaFormatRadioChanged)
+
+        # RSA Settings Key Grid Layout
+        self.rsaKeyGridLayoutWidget = QtWidgets.QWidget(self.rsaSettingsGroupBox)
+        self.rsaKeyGridLayoutWidget.setGeometry(QtCore.QRect(280, 14, 383, 70))
+        self.rsaKeyGridLayoutWidget.setObjectName("rsaKeyGridLayoutWidget")
+        self.rsaKeyGridLayout = QtWidgets.QGridLayout(self.rsaKeyGridLayoutWidget)
+        self.rsaKeyGridLayout.setContentsMargins(5, 0, 5, 0)
+        self.rsaKeyGridLayout.setObjectName("rsaKeyGridLayout")
+
+        # RSA Settings Private Key
+        self.rsaPrivateLabel = QtWidgets.QLabel(self.rsaKeyGridLayoutWidget)
+        self.rsaPrivateLabel.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.rsaPrivateLabel.setObjectName("rsaPrivateLabel")
+        self.rsaKeyGridLayout.addWidget(self.rsaPrivateLabel, 0, 0, 1, 1)
+
+        self.rsaPrivateLineEdit = QtWidgets.QLineEdit(self.rsaKeyGridLayoutWidget)
+        self.rsaPrivateLineEdit.setObjectName("rsaPrivateLineEdit")
+        self.rsaPrivateLineEdit.setReadOnly(True)
+        self.rsaKeyGridLayout.addWidget(self.rsaPrivateLineEdit, 0, 1, 1, 1)
+
+        self.rsaPrivateFileBtn = QtWidgets.QToolButton(self.rsaKeyGridLayoutWidget)
+        self.rsaPrivateFileBtn.setObjectName("rsaPrivateFileBtn")
+        self.rsaPrivateFileBtn.clicked.connect(self.rsaPrivateFileBtnClicked)
+        self.rsaKeyGridLayout.addWidget(self.rsaPrivateFileBtn, 0, 2, 1, 1)
+
+        self.rsaKeyGenBtn = QtWidgets.QPushButton(self.rsaKeyGridLayoutWidget)
+        self.rsaKeyGenBtn.setObjectName("rsaKeyGenBtn")
+        self.rsaKeyGenBtn.clicked.connect(self.rsaKeyGenBtnClicked)
+        self.rsaKeyGridLayout.addWidget(self.rsaKeyGenBtn, 0, 3, 1, 1)
+
+        # RSA Settings Public Key
+        self.rsaPublicLabel = QtWidgets.QLabel(self.rsaKeyGridLayoutWidget)
+        self.rsaPublicLabel.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.rsaPublicLabel.setObjectName("rsaPublicLabel")
+        self.rsaKeyGridLayout.addWidget(self.rsaPublicLabel, 1, 0, 1, 1)
+
+        self.rsaPublicLineEdit = QtWidgets.QLineEdit(self.rsaKeyGridLayoutWidget)
+        self.rsaPublicLineEdit.setObjectName("rsaPublicLineEdit")
+        self.rsaPublicLineEdit.setReadOnly(True)
+        self.rsaKeyGridLayout.addWidget(self.rsaPublicLineEdit, 1, 1, 1, 1)
+
+        self.rsaPublicFileBtn = QtWidgets.QToolButton(self.rsaKeyGridLayoutWidget)
+        self.rsaPublicFileBtn.setObjectName("rsaPublicFileBtn")
+        self.rsaPublicFileBtn.clicked.connect(self.rsaPublicFileBtnClicked)
+        self.rsaKeyGridLayout.addWidget(self.rsaPublicFileBtn, 1, 2, 1, 1)
+
+        self.rsaKeyViewBtn = QtWidgets.QPushButton(self.rsaKeyGridLayoutWidget)
+        self.rsaKeyViewBtn.setObjectName("rsaKeyViewBtn")
+        self.rsaKeyViewBtn.clicked.connect(self.rsaKeyViewBtnClicked)
+        self.rsaKeyGridLayout.addWidget(self.rsaKeyViewBtn, 1, 3, 1, 1)
+
+        # RSA InOut Vertical Layout
+        self.rsaInOutVerticalLayoutWidget = QtWidgets.QWidget(self.rsaTab)
+        self.rsaInOutVerticalLayoutWidget.setGeometry(QtCore.QRect(5, 99, 671, 253))
+        self.rsaInOutVerticalLayoutWidget.setObjectName("rsaInOutVerticalLayoutWidget")
+        self.rsaInOutVerticalLayout = QtWidgets.QVBoxLayout(self.rsaInOutVerticalLayoutWidget)
+        self.rsaInOutVerticalLayout.setContentsMargins(0, 0, 0, 0)
+        self.rsaInOutVerticalLayout.setObjectName("rsaInOutVerticalLayout")
+
+        # RSA Input Text Edit
+        self.rsaInputLabel = QtWidgets.QLabel(self.rsaInOutVerticalLayoutWidget)
+        self.rsaInputLabel.setObjectName("rsaInputLabel")
+        self.rsaInOutVerticalLayout.addWidget(self.rsaInputLabel)
+        self.rsaInputTextEdit = QtWidgets.QTextEdit(self.rsaInOutVerticalLayoutWidget)
+        self.rsaInputTextEdit.setObjectName("rsaInputTextEdit")
+        self.rsaInputTextEdit.textChanged.connect(self.rsaInputTextChanged)
+        self.rsaInOutVerticalLayout.addWidget(self.rsaInputTextEdit)
+
+        # RSA Output Text Edit
+        self.rsaOutputLabel = QtWidgets.QLabel(self.rsaInOutVerticalLayoutWidget)
+        self.rsaOutputLabel.setObjectName("rsaOutputLabel")
+        self.rsaInOutVerticalLayout.addWidget(self.rsaOutputLabel)
+        self.rsaOutputTextEdit = QtWidgets.QTextEdit(self.rsaInOutVerticalLayoutWidget)
+        self.rsaOutputTextEdit.setReadOnly(True)
+        self.rsaOutputTextEdit.setObjectName("rsaOutputTextEdit")
+        self.rsaInOutVerticalLayout.addWidget(self.rsaOutputTextEdit)
 
         # SHA Tab Widget
         self.shaTab = QtWidgets.QWidget()
@@ -280,7 +434,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.b64EncodingRadioBtn = QtWidgets.QRadioButton(self.b64RadioGridLayoutWidget)
         self.b64EncodingRadioBtn.setChecked(True)
         self.b64EncodingRadioBtn.setObjectName("b64EncodingRadioBtn")
-        self.b64EncodingRadioBtn.toggled.connect(self.b64MethodRadioChanged)
         self.b64RadioGridLayout.addWidget(self.b64EncodingRadioBtn, 0, 1, 1, 1)
 
         self.b64DecodeRadioBtn = QtWidgets.QRadioButton(self.b64RadioGridLayoutWidget)
@@ -291,6 +444,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.b64MethodButtonGroup.setObjectName("b64MethodButtonGroup")
         self.b64MethodButtonGroup.addButton(self.b64EncodingRadioBtn)
         self.b64MethodButtonGroup.addButton(self.b64DecodeRadioBtn)
+        self.b64MethodButtonGroup.buttonToggled.connect(self.b64MethodRadioChanged)
 
         # BASE64 InOut Vertical Layout
         self.b64InOutVerticalLayoutWidget = QtWidgets.QWidget(self.b64Tab)
@@ -325,6 +479,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def retranslateUi(self):
         _translate = QtCore.QCoreApplication.translate
         self.setWindowTitle(_translate("MainWindow", "TEXT ENCRYPTION/DECRYPTION CONVERTER"))
+        # AES Tab
         self.aesSettingsGroupBox.setTitle(_translate("MainWindow", "Settings"))
         self.aesDescryptRadioBtn.setText(_translate("MainWindow", "Decryption"))
         self.aesEncryptRadioBtn.setText(_translate("MainWindow", "Encryption"))
@@ -337,6 +492,24 @@ class MainWindow(QtWidgets.QMainWindow):
         self.aesInputLabel.setText(_translate("MainWindow", "Input Text"))
         self.aesOutputLabel.setText(_translate("MainWindow", "Output Text"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.aesTab), _translate("MainWindow", "AES"))
+        # RSA Tab
+        self.rsaSettingsGroupBox.setTitle(_translate("MainWindow", "Settings"))
+        self.rsaDescryptRadioBtn.setText(_translate("MainWindow", "Decryption"))
+        self.rsaEncryptRadioBtn.setText(_translate("MainWindow", "Encryption"))
+        self.rsaMethodLabel.setText(_translate("MainWindow", "Method"))
+        self.rsaFormatLabel.setText(_translate("MainWindow", "Format"))
+        self.rsaHexRadioBtn.setText(_translate("MainWindow", "Hex"))
+        self.rsaB64RadioBtn.setText(_translate("MainWindow", "Base64"))
+        self.rsaPrivateFileBtn.setText(_translate("MainWindow", "..."))
+        self.rsaPrivateLabel.setText(_translate("MainWindow", "Private"))
+        self.rsaPublicFileBtn.setText(_translate("MainWindow", "..."))
+        self.rsaPublicLabel.setText(_translate("MainWindow", "Public"))
+        self.rsaKeyGenBtn.setText(_translate("MainWindow", "Key Gen"))
+        self.rsaKeyViewBtn.setText(_translate("MainWindow", "Key View"))
+        self.rsaInputLabel.setText(_translate("MainWindow", "Input Text"))
+        self.rsaOutputLabel.setText(_translate("MainWindow", "Output Text"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.rsaTab), _translate("MainWindow", "RSA"))
+        # SHA Tab
         self.shaSettingsGroupBox.setTitle(_translate("MainWindow", "Settings"))
         self.sha256RadioBtn.setText(_translate("MainWindow", "SHA-256"))
         self.shaFormatLabel.setText(_translate("MainWindow", "Format"))
@@ -349,6 +522,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.shaInputLabel.setText(_translate("MainWindow", "Input Text"))
         self.shaOutputLabel.setText(_translate("MainWindow", "Output Text"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.shaTab), _translate("MainWindow", "SHA"))
+        # BASE64 Tab
         self.b64SettingsGroupBox.setTitle(_translate("MainWindow", "Settings"))
         self.b64EncodingRadioBtn.setText(_translate("MainWindow", "Encoding"))
         self.b64DecodeRadioBtn.setText(_translate("MainWindow", "Decoding"))
@@ -367,17 +541,83 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.aesOutputTextEdit.setText(self.aes.encrypt(text, password, salt, format) if self.aesEncryptRadioBtn.isChecked() else self.aes.decrypt(text, password, salt, format))
             except Exception as e:
                 self.aesOutputTextEdit.setText(str(e))
+        else:
+            self.aesOutputTextEdit.setText(self.aesInputTextEdit.toPlainText())
 
     def aesMethodRadioChanged(self, *args):
-        if bool(self.aesOutputTextEdit.toPlainText().strip()):
+        if args[1] and bool(self.aesOutputTextEdit.toPlainText().strip()):
             self.aesInputTextEdit.setText(self.aesOutputTextEdit.toPlainText().strip())
 
     def aesFormatRadioChanged(self, *args):
-        if bool(self.aesInputTextEdit.toPlainText().strip()) and self.aesDescryptRadioBtn.isChecked():
-            text = self.b64.hexToB64(self.aesInputTextEdit.toPlainText().strip()) if self.aesB64RadioBtn.isChecked() else self.b64.b64ToHex(self.aesInputTextEdit.toPlainText().strip())
-            self.aesInputTextEdit.setText(text)
+        if args[1]:
+            if bool(self.aesInputTextEdit.toPlainText().strip()) and self.aesDescryptRadioBtn.isChecked():
+                text = self.b64.hexToB64(self.aesInputTextEdit.toPlainText().strip()) if self.aesB64RadioBtn.isChecked() else self.b64.b64ToHex(self.aesInputTextEdit.toPlainText().strip())
+                self.aesInputTextEdit.setText(text)
+            else:
+                self.aesInputTextChanged(args)
+
+    def rsaKeyGenerate(self, *args):
+        prkey, pbkey = self.rsa.generate(RSA_BIT.RSA_2048)
+        with open(RSA_DEFAULT_PRIVATE_FILE, 'wb') as fprkey:
+            fprkey.write(prkey)
+        with open(RSA_DEFAULT_PUBLIC_FILE, 'wb') as fpbkey:
+            fpbkey.write(pbkey)
+        self.rsaPrivateFileRead(RSA_DEFAULT_PRIVATE_PATH)
+        self.rsaPublicFileRead(RSA_DEFAULT_PUBLIC_PATH)
+        self.messageBox.information(self, 'Information', 'The new RSA key has been generated.')
+
+    def rsaPrivateFileBtnClicked(self, *args):
+        file = QtWidgets.QFileDialog.getOpenFileName(self, 'Open Private PEM File', './', 'PEM File(*.pem)')
+        if file[0]:
+            self.rsaPrivateFileRead(file[0])
+
+    def rsaPrivateFileRead(self, file):
+        with open(file, 'r') as fprkey:
+            self.prkey = fprkey.read()
+            self.rsaPrivateLineEdit.setText(file)
+
+    def rsaPublicFileBtnClicked(self, *args):
+        file = QtWidgets.QFileDialog.getOpenFileName(self, 'Open Public PEM File', './', 'PEM File(*.pem)')
+        if file[0]:
+            self.rsaPublicFileRead(file[0])
+
+    def rsaPublicFileRead(self, file):
+        with open(file, 'r') as fpbkey:
+            self.pbkey = fpbkey.read()
+            self.rsaPublicLineEdit.setText(file)
+
+    def rsaKeyGenBtnClicked(self, *args):
+        confirm = self.messageBox.question(self, 'Confirm', 'Would you like to generate a new RSA Key?', QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No, QtWidgets.QMessageBox.No)
+        if confirm == QtWidgets.QMessageBox.Yes:
+            self.rsaKeyGenerate()
+
+
+    def rsaKeyViewBtnClicked(self, *args):
+        self.keyViewer.setKeyInfo(self.prkey, self.pbkey)
+        self.keyViewer.showNormal()
+
+    def rsaInputTextChanged(self, *args):
+        if bool(self.rsaInputTextEdit.toPlainText().strip()):
+            try:
+                format = OUTPUT_FORMAT.HEX if self.rsaHexRadioBtn.isChecked() else OUTPUT_FORMAT.B64
+                text = self.rsaInputTextEdit.toPlainText().strip()
+                self.rsaOutputTextEdit.setText(self.rsa.encrypt(text, self.pbkey, format=format) if self.rsaEncryptRadioBtn.isChecked() else self.rsa.decrypt(text, self.prkey, format=format))
+            except Exception as e:
+                self.rsaOutputTextEdit.setText(str(e))
         else:
-            self.aesInputTextChanged(args)
+            self.rsaOutputTextEdit.setText(self.rsaInputTextEdit.toPlainText())
+
+    def rsaMethodRadioChanged(self, *args):
+        if args[1] and bool(self.rsaOutputTextEdit.toPlainText().strip()):
+            self.rsaInputTextEdit.setText(self.rsaOutputTextEdit.toPlainText().strip())
+
+    def rsaFormatRadioChanged(self, *args):
+        if args[1]:
+            if bool(self.rsaInputTextEdit.toPlainText().strip()) and self.rsaDescryptRadioBtn.isChecked():
+                text = self.b64.hexToB64(self.rsaInputTextEdit.toPlainText().strip()) if self.rsaB64RadioBtn.isChecked() else self.b64.b64ToHex(self.rsaInputTextEdit.toPlainText().strip())
+                self.rsaInputTextEdit.setText(text)
+            else:
+                self.rsaInputTextChanged(args)
 
     def shaInputTextChanged(self, *args):
         if bool(self.shaInputTextEdit.toPlainText().strip()):
@@ -388,6 +628,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.shaOutputTextEdit.setText(self.sha.hash(text, algorithm, format))
             except Exception as e:
                 self.shaOutputTextEdit.setText(str(e))
+        else:
+            self.shaOutputTextEdit.setText(self.shaInputTextEdit.toPlainText())
 
     def b64InputTextChanged(self, *args):
         if bool(self.b64InputTextEdit.toPlainText().strip()):
@@ -396,7 +638,9 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.b64OutputTextEdit.setText(self.b64.encode(text) if self.b64EncodingRadioBtn.isChecked() else self.b64.decode(text))
             except Exception as e:
                 self.b64OutputTextEdit.setText(str(e))
+        else:
+            self.b64OutputTextEdit.setText(self.b64InputTextEdit.toPlainText())
 
     def b64MethodRadioChanged(self, *args):
-        if bool(self.b64OutputTextEdit.toPlainText().strip()):
+        if args[1] and bool(self.b64OutputTextEdit.toPlainText().strip()):
             self.b64InputTextEdit.setText(self.b64OutputTextEdit.toPlainText().strip())
